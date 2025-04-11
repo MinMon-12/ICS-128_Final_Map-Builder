@@ -3,6 +3,7 @@ let favouriteEvents = [];
 let classficationName = "music";
 let countryCode = "CA";
 const APIKEY = 'FWymGciklGsiIkJDr0CfyUz6CmxiDAA9';
+let markers = [];
 
 function createColoredIcon(color) {
     return new L.Icon({
@@ -37,35 +38,33 @@ class Event {
         this.city = city;
         this.lat = lat;
         this.long = long;
-        this.marker = this.addMarker(lat, long); // Function to Add marker to the map
     }
+}
 
-
-    //function to add marker to the map
-    addMarker = (lat, long ) => {
-        let icon;
-        // Set icon based on genre
-        if (this.genre === "Music") {
-            icon = redIcon;
-        } else if (this.genre === "Sports") {
-            icon = greenIcon;
-        } else if (this.genre === "Arts & Theatre") {
-            icon = violetIcon;
-        } else if (this.genre === "Film") {
-            icon = goldIcon;
-        }
-        else {
-            icon = grayIcon;
-        }
-        let marker = L.marker([lat, long], {
-            title: this.name, // Set the title of the marker to the event name
-            icon: icon // Set the icon of the marker
-        }).addTo(map); // Add marker to map
-        marker.bindPopup(createEventCard(this)); // Bind popup to the marker with event details
-        bindMarkerClickEvents(); // Bind click events to the marker
-        $(marker._icon).attr('id', `marker${this.id}`); // Store event ID in marker's data
-        return marker; // Return the marker object
+//function to add marker to the map
+let addMarker = (event, lat, long ) => {
+    let icon;
+    // Set icon based on genre
+    if (event.genre === "Music") {
+        icon = redIcon;
+    } else if (event.genre === "Sports") {
+        icon = greenIcon;
+    } else if (event.genre === "Arts & Theatre") {
+        icon = violetIcon;
+    } else if (event.genre === "Film") {
+        icon = goldIcon;
     }
+    else {
+        icon = grayIcon;
+    }
+    let marker = L.marker([lat, long], {
+        title: event.name, // Set the title of the marker to the event name
+        icon: icon // Set the icon of the marker
+    }).addTo(map); // Add marker to map
+    marker.bindPopup(createEventCard(event)); // Bind popup to the marker with event details
+    bindMarkerClickEvents(); // Bind click events to the marker
+    $(marker._icon).attr('id', `marker${event.id}`); // Store event ID in marker's data
+    return marker; // Return the marker object
 }
 
 //function to get the map 
@@ -101,6 +100,8 @@ async function fetchEvents() {
         cities.forEach(city => {
             $('#cityDropdown').append(`<option value="${city}">${city}</option>`);
         });
+
+        
     } catch (error) {
         alert("Network error! Please try again later."); // Alert user on network error
         console.error("Fetch error:", error); // Handle errors during fetch
@@ -144,10 +145,11 @@ let processEvents = (eventsData, page) => {
         let lat = parseFloat(venueData?.location?.latitude) || 0;
         let long = parseFloat(venueData?.location?.longitude) || 0;
 
-        // Only add events that have a valid location
+        // Only add events and display marker that have a valid location
         if (lat && long) {
             let event = new Event(id, name, date, venue, description, image, genre, subgenre, city, lat, long);
             events.push(event); // Add event to global array
+            markers.push(addMarker(event, event.lat, event.long)); // Add marker to the map
         }
     });
 }
@@ -229,41 +231,65 @@ let createEventCard = (event) => {
                 <h6>${event.genre} - ${event.subgenre}</h6>
                 <p><strong>Date:</strong> ${event.date}</p>
                 <p><strong>Venue:</strong> ${event.venue}</p>
+                <button class="btn btn-primary" id="btnAddToFavourites" data-id="${event.id}">Add to Favourites</button>
             </div>
         </div>
     `;
 };
 
-// This function 
+// This function saves the favourite events to json server
+let saveToFavourites = (eventID) => {
+    let event = findEventByID(eventID); // Find the event by ID
+    if (event) {
+        favouriteEvents.push(event); // Add event to favourites array
+        $.ajax({
+            url: 'https://min.json.compsci.cc/foo',
+            method: 'POST',
+            data: JSON.stringify(event),
+            contentType: 'application/json',
+            success: function(response) {
+                console.log("Event added to favourites successfully!", response);
+                favouriteEvents.push(event); // Ensure the event is added to the array after a successful POST
+            },
+            error: function(xhr, status, error) {
+                console.error("Error adding event to favourites!", status, error);
+            }
+        });
+    } else {
+        alert("Event not found!"); // Alert if event not found
+    }
+}
+
 
 // This function takes an array of events and clears the existing markers on the map
-let clearEvents = (events) => {
+let clearEvents = (markers) => {
     // Clear existing markers
-    events.forEach(event => {
-        if (event.marker) {
-            map.removeLayer(event.marker);
-        }
+    markers.forEach(marker => {
+        map.removeLayer(marker);
     });
+    markers.length = 0; // Clear the markers array in place
 }
 
 // This function filters events based on the selected city and displays them on the map
 // It takes the city to filter and the array of events as arguments
-let filterEventsByCity = (cityToFilter, events) =>{
-    clearEvents(events); // Clear existing markers before filtering
+let filterEventsByCity = (cityToFilter, events) => {
+    clearEvents(markers); // Clear existing markers before filtering
     let filteredEvents = events.filter(event => 
         event.city === cityToFilter);
     filteredEvents.forEach(event => {
-        event.marker = event.addMarker(event.lat, event.long)}) // Add markers for filtered events
+        markers.push(addMarker(event, event.lat, event.long)); // Add markers for filtered events
+    });
 }
 
 // This function filters events based on the selected genre and displays them on the map
 // It takes the genre to filter and the array of events as arguments
 let filterEvents = (genreToFilter, events) => {
-    clearEvents(events); // Clear existing markers before filtering
+    clearEvents(markers); // Clear existing markers before filtering
     let filteredEvents = events.filter(event => 
         event.genre === genreToFilter);
     filteredEvents.forEach(event => {
-        event.marker = event.addMarker(event.lat, event.long)}) // Add markers for filtered events
+        markers.push(addMarker(event, event.lat, event.long)); // Add markers for filtered events
+    });
 }
 
 $("#btnFetch").on("click", fetchEvents);
@@ -273,28 +299,57 @@ $("#cityDropdown").on("change", function() {
     let cityToFilter = $(this).val(); // Get selected city from dropdown
     // Check if "All" is selected
     if (cityToFilter === "All") {
-        clearEvents(events); // Clear existing markers if "All" is selected
+        clearEvents(markers); // Clear existing markers if "All" is selected
         events.forEach(event => {
-            event.marker = event.addMarker(event.lat, event.long)}) // Add markers for all events
+            markers.push(addMarker(event, event.lat, event.long)); // Add markers for all events
+        });
         return;
-    }else {
-        clearEvents(events); // Clear existing markers before filtering
-        filterEventsByCity(cityToFilter,events); // Filter events based on selected city
+    } else {
+        filterEventsByCity(cityToFilter, events); // Filter events based on selected city
     }
 });
+
 // Event listener for genre dropdown change
 $("#genreDropdown").on("change", function() {
     let genreToFilter = $(this).val(); // Get selected genre from dropdown
     // Check if "All" is selected
     if (genreToFilter === "All") {
-        clearEvents(events); // Clear existing markers if "All" is selected
+        clearEvents(markers); // Clear existing markers if "All" is selected
         events.forEach(event => {
-            event.marker = event.addMarker(event.lat, event.long)}) // Add markers for all events
+            markers.push(addMarker(event, event.lat, event.long)); // Add markers for all events
+        });
         return;
-    }else{
-        clearEvents(events); // Clear existing markers before filtering
-        filterEvents(genreToFilter,events); // Filter events based on selected genre
+    } else {
+        filterEvents(genreToFilter, events); // Filter events based on selected genre
     }
 });
 
+// Event listener for adding to favourites (delegated)
+$(document).on("click", "#btnAddToFavourites", function() {
+    alert("Clicked");
+    let eventID = $(this).data('id'); // Get event ID from button data attribute
+    saveToFavourites(eventID); // Save event to favourites
+});
+
+//This async function fetch the favourite events from json server and display them on the map
+let fetchFavourites = async() => {
+    $.ajax({
+        url: 'https://min.json.compsci.cc/foo',
+        method: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            console.log(data); // Log fetched data to console
+            clearEvents(markers); // Clear existing markers before displaying favourites
+            favouriteEvents = data; // Store fetched events in favouriteEvents array
+            favouriteEvents.forEach(event => {
+                markers.push(addMarker(event, event.lat, event.long))}) // Add markers for favourite events
+            console.log(favouriteEvents); // Log favourite events to console
+        },
+        error: function() {
+            console.error("Error fetching favourite events!");
+        }
+    });
+}
+// Event listener for fetching favourite events
+$("#btnFetchFavourites").on("click", fetchFavourites); // Fetch favourite events when button is clicked
 
