@@ -1,0 +1,66 @@
+:root
+{
+    --primary: orange;
+}
+body {
+    height:100%;
+    color:white;
+    margin: 0;
+    padding: 0;
+}
+/* color of the active nav link */
+.active-nav{
+    color: var(--primary);
+}
+/* not to change the color of the active nav link */
+.active-nav:hover{
+    color: var(--primary);
+}
+
+.bold-text{
+    font-weight: 800;
+}
+.banner{
+    width:100%;
+    padding: 3%;
+    background-size:cover;
+    height:inherit;
+}
+#quiz {
+    padding: 3% 20%;
+}
+.quiz-form {
+    background-color: #432E36;
+    margin-bottom:5%;
+}
+.small-font{
+    font-size:0.7rem;
+}
+a{
+    cursor:pointer;
+}
+p{
+    color:black;
+}
+#map { 
+    height: 100vh;
+    margin-bottom:5%;
+ }
+
+
+ .popup-card {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 10px;
+    width: 500px;
+    height: 200px;
+}
+
+
+.card-img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
