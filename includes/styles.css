@@ -7,6 +7,7 @@ body {
     color:white;
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
 }
 /* color of the active nav link */
 .active-nav{
@@ -16,7 +17,23 @@ body {
 .active-nav:hover{
     color: var(--primary);
 }
+.navbar{
+   z-index: 10000;
+}
 
+.menubar{
+    padding-left: 5%;
+    padding-right: 5%;
+    box-sizing: border-box;
+    width: 100%;
+    z-index: 1000;
+    position: absolute;
+    background-color: rgba(27, 82, 176, 0.629);
+    height: 10vh;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 .bold-text{
     font-weight: 800;
 }
@@ -44,7 +61,6 @@ p{
 }
 #map { 
     height: 100vh;
-    margin-bottom:5%;
  }
 
 
@@ -64,3 +80,64 @@ p{
     margin-bottom: 10px;
 }
 
+.content{
+    position: relative;
+    height: 100vh;
+}
+
+#addEventForm{
+    display: none;
+}
+
+.spinner {
+    display: inline-block;
+    transition: 0.5s;
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+@keyframes spinning {
+    from {
+        -ms-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+        -webkit-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    to {
+        -ms-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
+        -webkit-transform: rotate(360deg);
+        -o-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+.spinner.spin {
+    animation: spinning 2s linear infinite;
+    display: inline-block;
+}
+
+.modal{
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center horizontally and vertically */
+    width: 300px; /* You can adjust this as needed */
+    height: 150px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.95); /* Light background for readability */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    text-align: center;
+}
+.mainButtons
+{
+    display: flex;
+    justify-content: center;
+}
