@@ -45,7 +45,6 @@ $(document).ready(function() {
     });
     $("#btnSavedEvents").addClass("active"); // Add active class to the button
     //Show my events menu on page load
-    console.log($("#btnSavedEvents").hasClass("active"));
     if($("#btnSavedEvents").hasClass("active")){
         $("#btnAddToFavourites").addClass("d-none"); // Hide add to favourites button
     }
@@ -147,8 +146,7 @@ let fetchEvents = async() => {
         });
         return localEvents; // Return the array of events
     } catch (error) {
-        console.error("Error fetching events:", error);
-        showModal(error); // Custom modal for user-friendly error message
+        showModal(error="Network error"); // Custom modal for user-friendly error message
     } finally {
         $("#spinner2").removeClass("spin"); // Remove spinner class after fetching
         $("#btnLocalEvents").removeAttr("disabled") // Enable button after fetching
@@ -170,7 +168,6 @@ let fetchEventPage = async(page) => {
     return await response.json(); // Return parsed JSON data
 }
 
-let processedEvents = [];
 // Process event data and store valid ones in the global events array
 let processEvents = (eventsData, page) => {
     eventsData.forEach((item, index) => {
@@ -231,9 +228,7 @@ let bindMarkerClickEvents =() => {
 // Function to handle marker click
 let onMarkerClick = (markerElement) => {
     let markerID = $(markerElement).attr('id');
-    console.log("Marker ID:", markerID);
     let eventID = extractEventID(markerID);
-    console.log("Event ID:", eventID);
     let event = findEventByID(eventID);
     if (event) {
         flyToEventLocation(event);
@@ -318,7 +313,6 @@ let saveToFavourites = (eventID) => {
             data: JSON.stringify(event),
             contentType: 'application/json',
             success: function(response) {
-                console.log(response); // Log the response from the server
                 // Show success modal
                 showModal("Event added to favourites!"); // Show success message
             },
@@ -418,7 +412,6 @@ let deleteSavedEvent = (eventID) => {
         url: `https://min.json.compsci.cc/foo/${eventID}`, 
         method: 'DELETE',
         success: function(response) {
-            console.log(response); // Log the response from the server
             showModal("The event is deleted successfully!"); // Show success message
             favouriteEvents.length--; // decrease the favourite events array length by 1
             location.reload(); // Reload the page to reflect changes
@@ -463,8 +456,6 @@ $("#btnAddEvent").on("click", function() {
                     data: JSON.stringify(customEvent), 
                     contentType: 'application/json',
                     success: function(response) {
-
-                        console.log(response); // Log the response from the server
                         //show success modal 
                         showModal("Event added successfully!"); // Show success message
                         markers.push(addMarker(customEvent, lat, long)); // Add marker for the new event
@@ -548,7 +539,6 @@ $("#cityDropdown").on("change", function() {
 // Event listener for genre dropdown change
 $("#genreDropdown").on("change", function() {
     let genreToFilter = $(this).val(); // Get selected genre from dropdown
-    console.log(genreToFilter);
     // Check if "All" is selected
     if (genreToFilter == "All Genres") {
         clearEvents(markers); // Clear existing markers if "All" is selected
