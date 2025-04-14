@@ -4,10 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Min - ICS 128 - Final Project</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="includes/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=refresh" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   </head>
   <body>
@@ -37,39 +41,54 @@
               </div>
           </div>
       </nav>
-        <div id="addEventForm">
-            <form action="" method="post" id="eventForm">
-              <input type="text" id="customEventName" placeholder="Event Name">
-              <input type="date" id="customEventDate" placeholder="Event Date">
-              <input type="text" id="customEventLocation" placeholder="Event Location">
-              <button type="submit" id="btnSaveEvent">Save</button>
-              <button id="btnCancelAddEvent">Cancel</button>
-            </form>
-        </div>
+      <div id="addEventForm">
+        <form action="" method="post" id="eventForm" class="d-flex flex-column">
+          <div class="form-group mt-2">
+            <label for="customEventName">Event Name</label>
+            <input type="text" id="customEventName" class="inputBox" placeholder="Enter event name">
+      
+            <label for="customEventDate">Event Date</label>
+            <input type="date" id="customEventDate" class="inputBox">
+      
+            <label for="customEventLocation">Location</label>
+            <input type="text" id="customEventLocation" class="inputBox" placeholder="Enter event location">
+          </div>
+      
+          <div class="form-group mb-2 d-flex justify-content-end">
+            <button type="submit" id="btnSaveEvent">Save</button>
+            <button type="button" id="btnCancelAddEvent">Cancel</button>
+          </div>
+        </form>
+      </div>
         <div class="menubar">
-            <div class="d-flex flex-column w-30">
-              <button id="btnSavedEvents" class="mainButtons">My events <span id="spinner1" class="material-symbols-outlined spinner">stream</span></button>
-              <button id="btnLocalEvents" class="mainButtons">Local Events <span id="spinner2" class="material-symbols-outlined spinner">stream</span></button>
-          </div>
-
-          
-
-          <div class="myEventsMenu">
-            <button id="btnAddEvent">Add Custom Event</button>
-              <button id="btnClearFavourites">Clear Favourites</button>
-          </div>
-          
-          <div class="localEventsMenu">
-            <select name="selectCity" id="cityDropdown">
-            </select>
-            <select name="selectGenre" id="genreDropdown">
-            </select>
-          </div>
+            <div class="col-4">
+                <h1 class="abril-fatface-regular">Canada Events Finder</h1>
+            </div>
+            <div class="d-flex flex-row w-30 col-4">
+                <button id="btnSavedEvents" class="primaryBtn">My events <span id="spinner1" class="spinner material-symbols-outlined d-none">refresh</span></button>
+                <button id="btnLocalEvents" class=" primaryBtn">Local Events <span id="spinner2" class="spinner material-symbols-outlined d-none">refresh</span></button>
+            </div>
+            <div class="myEventsMenu col-4 text-end">
+                <button id="btnAddEvent" class="secondaryBtn">Add Custom Event <span class="material-symbols-outlined">add</span></button>
+            </div>
+            <div class="localEventsMenu col-4 text-end">
+                <label for="cityDropdown">City</label>
+                <select name="selectCity" id="cityDropdown" class="selectBox">
+                </select>
+                <label for="genreDropdown">Genre</label>
+                <select name="selectGenre" id="genreDropdown" class="selectBox">
+                </select>
+            </div>
         </div>
           <div id="map" class=""></div>
             <div id="modal" class="modal">
-                <p id="errorMessage"></p>
-                <button onclick="closeModal()">OK</button>
+                <p id="message"></p>
+                <button class="btnCloseModal">OK</button>
+            </div>
+            <div id="confirmationModal" class="modal">
+                <p id="message2"></p>
+                <button class="btn btn-warning" id="btnConfirmDelete">Yes</button>
+                <button class="btn btnCloseModal">Cancel</button>
             </div>
         </div>
 

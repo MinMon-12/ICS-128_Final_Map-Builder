@@ -1,6 +1,7 @@
 :root
 {
     --primary: orange;
+    --primary-light: rgb(188, 236, 15);
 }
 body {
     height:100%;
@@ -28,8 +29,8 @@ body {
     width: 100%;
     z-index: 1000;
     position: absolute;
-    background-color: rgba(27, 82, 176, 0.629);
-    height: 10vh;
+    background-color: rgba(7, 28, 65, 0.703);
+    height: 13vh;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -85,9 +86,6 @@ p{
     height: 100vh;
 }
 
-#addEventForm{
-    display: none;
-}
 
 .spinner {
     display: inline-block;
@@ -136,8 +134,207 @@ p{
     border-radius: 10px;
     text-align: center;
 }
-.mainButtons
-{
+
+
+.primaryBtn{
     display: flex;
     justify-content: center;
+    background-color: rgb(228, 228, 228);
+    color: rgb(0, 0, 0);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 20px;
+    margin: 5px;
+    align-items: center;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 40%);
 }
+
+.active {
+    background-color: var(--primary-light);
+    color: rgb(43, 43, 43);
+    border: none;
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+
+#eventForm{
+    color: black;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.inputBox{
+    padding: 2px 5px;
+}
+
+#addEventForm {
+    display: none;
+    width: 100%;
+    background-color: rgb(238, 238, 238);
+    position: relative;
+    top: -100px;
+    transition: all 0.5s ease;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    height: auto;
+  }
+  
+  #eventForm .form-group {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  #eventForm label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  .inputBox {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+  
+  .inputBox:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  #btnSaveEvent,
+  #btnCancelAddEvent {
+    padding: 10px 20px;
+    margin-top: 20px;
+    margin-right: 10px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+  }
+  
+  #btnSaveEvent {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  #btnSaveEvent:hover {
+    background-color: #0056b3;
+  }
+  
+  #btnCancelAddEvent {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  #btnCancelAddEvent:hover {
+    background-color: #5a6268;
+  }
+
+  .abril-fatface-regular {
+    font-family: "Abril Fatface", serif;
+    font-weight: 400;
+    font-style: normal;
+    color: rgb(132, 209, 132);
+  }
+
+  .selectBox {
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #fff;
+    color: #333;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .selectBox:focus {
+    border-color: rgb(11, 79, 197);
+    outline: none;
+    box-shadow: 0 0 5px rgba(11, 79, 197, 0.3);
+  }
+
+  .secondaryBtn{
+    background-color: rgb(238, 238, 238);
+    color: rgb(0, 0, 0);
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    margin: 5px;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 40%);
+  }
+
+   /* Responsive Styles */
+
+   @media (max-width: 992px) {
+    .menubar {
+      flex-direction: column;
+      height: auto;
+      padding: 15px;
+      gap: 10px;
+    }
+
+    .menubar .col-4,
+    .menubar .d-flex.flex-row.w-30.col-4,
+    .myEventsMenu,
+    .localEventsMenu {
+      width: 100% !important;
+      text-align: center !important;
+      justify-content: center !important;
+    }
+
+    #eventForm {
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    #eventForm .form-group {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .primaryBtn,
+    .secondaryBtn,
+    #btnSaveEvent,
+    #btnCancelAddEvent {
+      width: 100%;
+    }
+
+    #map {
+      height: 100vh;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .navbar-brand {
+      font-size: 1.5rem;
+    }
+
+    .abril-fatface-regular {
+      font-size: 1.5rem;
+    }
+
+    .primaryBtn,
+    .secondaryBtn {
+      font-size: 1rem;
+    }
+
+    .selectBox {
+      width: 100%;
+    }
+  }

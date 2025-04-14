@@ -3,7 +3,6 @@ let favouriteEvents = [];
 let countryCode = "CA";
 const APIKEY = 'FWymGciklGsiIkJDr0CfyUz6CmxiDAA9';
 let markers = [];
-let customEvents = [];
 
 //class to create event objects
 class Event {
@@ -30,7 +29,7 @@ class CustomEvent {
         this.name = name;
         this.date = date;
         this.venue = venue;
-        this.genre = "Custom Event";
+        this.genre = genre;
         this.lat = lat;
         this.long = long;
     }
@@ -41,12 +40,15 @@ $(document).ready(function() {
     // Fetch saved events from JSON server
     fetchFavourites().then(() => {
         showSavedEvents(); // Display favourite events on map
+    }).catch(error => {
+        showModal(error); // Show error modal for user-friendly message
     });
-    fetchEvents().then(() =>{
-        $("$btnLocalEvents").on("click", showLocalEvents);
-    })
-    //fetchEvents(); // Fetch events from Ticketmaster API on page load
+    $("#btnSavedEvents").addClass("active"); // Add active class to the button
     //Show my events menu on page load
+    console.log($("#btnSavedEvents").hasClass("active"));
+    if($("#btnSavedEvents").hasClass("active")){
+        $("#btnAddToFavourites").addClass("d-none"); // Hide add to favourites button
+    }
     $(".myEventsMenu").show();
     //Hide local events menu on page load
     $(".localEventsMenu").hide();
@@ -114,6 +116,7 @@ let addMarker = (event, lat, long ) => {
 
 // Main async function to fetch events from Ticketmaster API and populate dropdowns
 let fetchEvents = async() => {
+    $("#spinner2").removeClass("d-none"); // Show spinner
     $("#spinner2").addClass("spin");
     $("#btnLocalEvents").attr("disabled", "disabled");
     try {
@@ -149,11 +152,12 @@ let fetchEvents = async() => {
     } finally {
         $("#spinner2").removeClass("spin"); // Remove spinner class after fetching
         $("#btnLocalEvents").removeAttr("disabled") // Enable button after fetching
+        $("#spinner2").addClass("d-none"); // Show spinner
     }
 }
 
 // Fetch a single page of events from Ticketmaster API
-async function fetchEventPage(page) {
+let fetchEventPage = async(page) => {
     const url = `https://app.ticketmaster.com/discovery/v2/events.json?countryCode=${countryCode}&page=${page}&size=200&apikey=${APIKEY}`;
     let response = await fetch(url, {
         method: "GET",
@@ -218,14 +222,14 @@ let getCity = () => {
 }
 
 // A function to bind click event to Leaflet marker icons 
-function bindMarkerClickEvents() {
+let bindMarkerClickEvents =() => {
     $('.leaflet-marker-icon').on('click', function () {
         onMarkerClick(this); // Call custom handler for marker click
     });
 }
 
 // Function to handle marker click
-function onMarkerClick(markerElement) {
+let onMarkerClick = (markerElement) => {
     let markerID = $(markerElement).attr('id');
     console.log("Marker ID:", markerID);
     let eventID = extractEventID(markerID);
@@ -240,22 +244,22 @@ function onMarkerClick(markerElement) {
 }
 
 // Extract event ID from marker ID
-function extractEventID(markerID) {
+let extractEventID = (markerID) => {
     return markerID.replace('marker', '');
 }
 
 // Find event by ID from events array
-function findEventByID(id) {
+let findEventByID = (id) => {
     return localEvents.find(event => event.id == id);
 }
 
 // Find event by ID from favourite events array
-function findFavouriteEventByID(id) {
+let findFavouriteEventByID = (id) => {
     return favouriteEvents.find(event => event.id == id);
 }
 
 // Fly to the event location on the map
-function flyToEventLocation(event) {
+let flyToEventLocation = (event) => {
     const offsetLat = event.lat + 0.0065; // the value to control vertical offset
     map.flyTo([offsetLat, event.long], 15, {
         duration: 2
@@ -264,6 +268,8 @@ function flyToEventLocation(event) {
     
 // This function takes an event object and creates a card element to display the event details
 let createEventCard = (event) => {
+    let isSavedView = $("#btnSavedEvents").hasClass("active");
+    let isLocalView = $("#btnLocalEvents").hasClass("active");
     return `
         <div class="card" id="${event.id}">
             <div class="card-header">
@@ -274,7 +280,8 @@ let createEventCard = (event) => {
                 <h6>${event.genre} - ${event.subgenre}</h6>
                 <p><strong>Date:</strong> ${event.date}</p>
                 <p><strong>Venue:</strong> ${event.venue}</p>
-                <button class="btn btn-primary" id="btnAddToFavourites" data-id="${event.id}">Add to Favourites</button>
+                <button class="btn btn-primary ${isSavedView ? 'd-none' : ''}" id="btnAddToFavourites" data-id="${event.id}">Add to Favourites</button>
+                <button class="btn btn-danger  ${isLocalView ? 'd-none' : ''}" id="btnDelete" data-id="${event.id}">Delete</button>
             </div>
         </div>
     `;
@@ -289,8 +296,7 @@ let createCustomEventCard = (event) => {
                 <h6>${event.genre}</h6>
                 <p><strong>Date:</strong> ${event.date}</p>
                 <p><strong>Venue:</strong> ${event.venue}</p>
-                <button class="btn btn-primary" id="btnCustomEdit" data-id="${event.id}">Add to Favourites</button>
-                <button class="btn btn-primary" id="btnCustomDelete" data-id="${event.id}">Delete</button>
+                <button class="btn btn-danger" id="btnDelete" data-id="${event.id}">Delete</button>
             </div>
         </div>
     `;
@@ -299,28 +305,30 @@ let createCustomEventCard = (event) => {
 // This function saves the favourite events to json server
 let saveToFavourites = (eventID) => {
     let event = findEventByID(eventID); // Find the event by ID
-    event.id = favouriteEvents.length + 1; // Assign a new ID for the favourite event
     // Check if event is already in favourites
     if (event) {
+        event.id = favouriteEvents.length + 1; // Assign a new ID for the favourite event
         // Check if the event is already in favourites
         if (favouriteEvents.some(e => e.id === event.id)) {
-            alert("Event already in favourites!"); // Alert if event is already in favourites
-            return;
-        }
+            showModal(error= "Event already in favourites!"); // Show error modal if event is already in favourites
+        } else{
         $.ajax({
             url: 'https://min.json.compsci.cc/foo', // correct endpoint
             method: 'POST',
             data: JSON.stringify(event),
             contentType: 'application/json',
             success: function(response) {
-                //
+                console.log(response); // Log the response from the server
+                // Show success modal
+                showModal("Event added to favourites!"); // Show success message
             },
             error: function( status, error) {
                 showModal(error); // Show error modal if fetching fails
             }
         });
+    }
     } else {
-        alert("Event not found!"); // Alert if event not found
+        showModal(error= "Event not found!"); // Show error modal if event is not found
     }
 }
 
@@ -358,18 +366,21 @@ let filterEvents = (genreToFilter, localEvents) => {
 
 let showSavedEvents = () => {
     clearEvents(markers); // Clear markers
+    // Only show modal if we really have no data AND it was successfully fetched
     if (favouriteEvents.length === 0) {
-        showModal(error="You have no items saved yet."); // Show error modal if fetching fails
-    }else{
-        favouriteEvents.forEach(event => {
-            markers.push(addMarker(event, event.lat, event.long)); // Add markers for favourite events
-        });
+        // Don't show this modal here if there's already an error handled in fetchFavourites
+        console.warn("No saved events found."); // Log it instead, or handle differently
+        return;
     }
+    favouriteEvents.forEach(event => {
+        markers.push(addMarker(event, event.lat, event.long)); // Add markers for favourite events
+    });
 }
 
 
 //This function show saved events and custom events on the map
-let showLocalEvents = () => {
+let showLocalEvents = async () => {
+    await fetchEvents(); // Fetch events from Ticketmaster API
     clearEvents(markers); // Clear markers
     if (localEvents.length === 0) {
         showModal(error="Network error. Please try again later"); // Show error modal if fetching fails
@@ -382,21 +393,41 @@ let showLocalEvents = () => {
 
 //This async function fetch the favourite events from json server and return the data
 let fetchFavourites = async () => {
+    $("#spinner1").removeClass("d-none"); // Show spinner
     $("#spinner1").addClass("spin");
+    $("#btnSavedEvents").attr("disabled", "disabled");
     try {
         const response = await fetch('https://min.json.compsci.cc/foo');
         if (!response.ok) throw new Error("Failed to fetch favourites");
 
         const data = await response.json();
         favouriteEvents.push(...data); // Spread into array
-        console.log(favouriteEvents);
     } catch (error) {
         clearEvents(markers);
         showModal(error);  // Show error modal if fetching fails
     } finally {
+        $("#btnSavedEvents").removeAttr("disabled"); // Enable button after fetching
         $("#spinner1").removeClass("spin"); // Remove spinner class after fetching
+        $("#spinner1").addClass("d-none"); // Show spinner
     }
 };
+
+//This function delete all the data from the json server
+let deleteSavedEvent = (eventID) => {
+    $.ajax({
+        url: `https://min.json.compsci.cc/foo/${eventID}`, 
+        method: 'DELETE',
+        success: function(response) {
+            console.log(response); // Log the response from the server
+            showModal("The event is deleted successfully!"); // Show success message
+            favouriteEvents.length--; // decrease the favourite events array length by 1
+            location.reload(); // Reload the page to reflect changes
+        },
+        error: function(status, error) {
+            showModal(error+ status); // Show error modal if fetching fails
+        }
+    });
+}
 
 // Event listener for "Add Event" button click
 $("#btnAddEvent").on("click", function() {
@@ -412,18 +443,19 @@ $("#btnAddEvent").on("click", function() {
             //make the map clickable once
             map.off('click'); // Remove click event from map
             // Show the form to add event details
-            $("#addEventForm").css({top: "-100px", display: "block"}).animate({top: "0px"}, 500);
+            $("#addEventForm").css({top: "-100px", display: "block"}).animate({top: "0px"}, 300);
             //if the form is submitted, save the event to the json server
             $("#eventForm").on("submit", function(event) {
                 // Make the page not refresh when the button is clicked
                 event.preventDefault(); // Prevent default form submission
-                let id = customEvents.length + 1; // Assign a new ID for the custom event
+                //Assign a new ID to the event
+                let id = favouriteEvents.length + 1; // Assign a new ID for the event
                 let name = $("#customEventName").val(); // Get event name from input field
                 let date = $("#customEventDate").val(); // Get event date from input field
                 let venue = $("#customEventLocation").val(); // Get event venue from input field
 
                 // Create a new event object with the provided details
-                let customEvent = new CustomEvent(id,name, date, venue, lat, long);                
+                let customEvent = new CustomEvent(id, name, date, venue, "Custom Event", lat, long);                
                 
                 $.ajax({
                     url: 'https://min.json.compsci.cc/foo',
@@ -431,11 +463,11 @@ $("#btnAddEvent").on("click", function() {
                     data: JSON.stringify(customEvent), 
                     contentType: 'application/json',
                     success: function(response) {
+
+                        console.log(response); // Log the response from the server
                         //show success modal 
                         showModal("Event added successfully!"); // Show success message
-                        customEvents.push(customEvent); // Add the new event to the customEvents array
                         markers.push(addMarker(customEvent, lat, long)); // Add marker for the new event
-                        map.removeLayer(marker); // Remove the temporary marker from the map
                         $("#addEventForm").animate({top: "-100px"}, 500, function() {
                             $(this).css({display: "none"}); // Hide the form after animation
                             $(".menubar").animate({top: "60px"}, 500, function() {
@@ -445,7 +477,7 @@ $("#btnAddEvent").on("click", function() {
                     },
                     error: function(status, error) {
                         map.removeLayer(marker); // Remove the temporary marker from the map
-                        showModal(error="Error adding new event. Please try again later."); // Show error modal if fetching fails
+                        showModal(error+ status); // Show error modal if fetching fails
                         $("#addEventForm").animate({top: "-100px"}, 500, function() {
                             $(this).css({display: "none"}); // Hide the form after animation
                             $(".menubar").animate({top: "60px"}, 500, function() {
@@ -475,18 +507,26 @@ $("#btnAddEvent").on("click", function() {
 
 // Show My Events Menu
 $("#btnSavedEvents").click(function () {
-  $(".myEventsMenu").show();
-  $(".localEventsMenu").hide();
+    $("#btnSavedEvents").addClass("active"); // Add active class to the button
+    $("#btnLocalEvents").removeClass("active"); // Remove active class from the other button
+    $(".myEventsMenu").show();
+    $(".localEventsMenu").hide();
 });
 
 // Show Local Events Menu
 $("#btnLocalEvents").click(function () {
-  $(".localEventsMenu").show();
-  $(".myEventsMenu").hide();
+    $("#btnLocalEvents").addClass("active"); // Add active class to the button
+    $("#btnSavedEvents").removeClass("active"); // Remove active class from the other button
+    $(".localEventsMenu").show();
+    $(".myEventsMenu").hide();
 });
 
 // Event listener for showing saved events
-$("#btnSavedEvents").on("click", showSavedEvents); // Show favourite events when button is clicked
+$("#btnSavedEvents").on("click", function(){
+    fetchFavourites().then(() => {
+        showSavedEvents(); // Display favourite events on map
+    });
+}); // Show favourite events when button is clicked
 // Event listenter for showing local events
 $("#btnLocalEvents").on("click", showLocalEvents); // Show local events when button is clicked
 
@@ -523,24 +563,49 @@ $("#genreDropdown").on("change", function() {
 
 // Event listener for adding to favourites (delegated)
 $(document).on("click", "#btnAddToFavourites", function() {
-    alert("Clicked");
     let eventID = $(this).data('id'); // Get event ID from button data attribute
     saveToFavourites(eventID); // Save event to favourites
 });
 
 //function to show the error modal
-function showModal(message) {
+let showModal = (message) =>{
     // Set the error message in the modal
-    $('#errorMessage').text(message);
+    $('#message').text(message);
     // Show the modal
     $('#modal').fadeIn();
 }
 
 // Function to close the error modal
-function closeModal() {
+let closeModal = (modalName)=> {
     // Hide the modal
-    $('#modal').fadeOut();
+    $(modalName).fadeOut();
 }
+
+// Event listener for closing the modal
+$(".btnCloseModal").on("click", function() {
+    closeModal(".modal"); // Close the modal when button is clicked
+});
+
+// Event listener for deleting saved item (delegated)
+$(document).on("click", "#btnDelete", function() {
+    let eventID = $(this).data('id'); // Get event ID from button data attribute
+   // Show confirmation modal before deleting all events
+    $('#confirmationModal').fadeIn(); // Show confirmation modal
+    $("#message2").text("Are you sure you want to delete this event?"); // Set confirmation message
+    // If the user confirms, delete all events
+    $("#btnConfirmDelete").on("click", function() {
+        deleteSavedEvent(eventID); // Call function to delete all events
+        $('#confirmationModal').fadeOut(); // Hide confirmation modal
+        fetchFavourites().then(() => {
+            showSavedEvents(); // Display favourite events on map
+        });
+    });
+    // If the user cancels, hide the confirmation modal
+    $("#btnCancelDelete").on("click", function() {
+        $('#confirmationModal').fadeOut(); // Hide confirmation modal
+    });
+});
+
 
 
 
