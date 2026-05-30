@@ -18,9 +18,6 @@ body {
 .active-nav:hover{
     color: var(--primary);
 }
-.navbar{
-   z-index: 10000;
-}
 
 .menubar{
     padding-left: 5%;
@@ -34,6 +31,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    top:0;
 }
 .bold-text{
     font-weight: 800;
@@ -175,12 +173,12 @@ p{
     display: none;
     width: 100%;
     background-color: rgb(238, 238, 238);
-    position: relative;
-    top: -100px;
-    transition: all 0.5s ease;
+    position: absolute;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     height: auto;
+    padding-top: 3%;
+    z-index: 999;
   }
   
   #eventForm .form-group {
@@ -286,6 +284,7 @@ p{
       height: auto;
       padding: 15px;
       gap: 10px;
+      top: 0;
     }
 
     .menubar .col-4,
