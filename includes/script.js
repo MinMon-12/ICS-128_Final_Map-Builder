@@ -480,11 +480,14 @@ $("#btnAddEvent").on("click", function() {
                 });
                 //show success modal 
                 showModal("Event added successfully!"); // Show success message
-                markers.push(addMarker(customEvent, lat, long)); // Add marker for the new event
+                // markers.push(addMarker(customEvent, lat, long)); // Add marker for the new event
                 $("#addEventForm").animate({top: "-100px"}, 500, function() {
                     $(this).css({display: "none"}); // Hide the form after animation
                     $(".menubar").animate({top: 0}, 500); //Show the menu bar 
                 });
+                map.removeLayer(marker); // Remove the temporary marker from the map
+                await fetchFavourites(); //refetch 
+                showSavedEvents();
                 } catch (error) {
                     showModal(error= error); // Show error modal if event is not found
                     map.removeLayer(marker); // Remove the temporary marker from the map
